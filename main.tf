@@ -66,22 +66,22 @@ resource "aws_connect_queue" "Option5" {
 
 variable "routing_profile_option2" {
   type = string
-  default = "22740f26-f987-4b83-bb56-dd853f29d62e"
+  default = "2920a445-e488-4a20-ab3d-b2d7a2d60671"
 }
 
 variable "routing_profile_option3" {
   type = string
-  default = "8eddcdcd-c48f-40f6-a864-b3e049464180"
+  default = "96c78d3f-b552-4582-871b-7e5e92e4117b"
 }
 
 variable "routing_profile_option4" {
   type = string
-  default = "3a5a38a7-ad9a-4c7c-bb80-64ca015b0e14"
+  default = "c6809aa6-1456-43ea-a4b6-5113fec37014" 
 }
 
 variable "routing_profile_option5" {
   type = string
-  default = "e874ce87-9eac-4228-8bae-f242c86a7337"
+  default = "b8b5b4ac-e15f-4818-bee9-6fd28ca9f210"
 }
 
 resource "aws_connect_routing_profile" "Option2" {
@@ -250,3 +250,72 @@ resource "aws_connect_user" "agent" {
     last_name           = "User"
   }
 }
+
+resource "aws_connect_user" "agent2" {
+  instance_id           = data.aws_connect_instance.existing.id
+  name                  = "Agent2"
+  password              = "SpaceCode3122!"
+  routing_profile_id    = var.routing_profile_option2
+  security_profile_ids  = ["fc3b7c27-a40a-4845-8fde-e1ada8ea05ed"]
+
+  phone_config {
+    phone_type          = "SOFT_PHONE"
+  }
+
+  identity_info {
+    first_name          = "Agent2"
+    last_name           = "User"
+  }
+}
+
+resource "aws_connect_user" "agent3" {
+  instance_id           = data.aws_connect_instance.existing.id
+  name                  = "Agent3"
+  password              = "SpaceCode3122!"
+  routing_profile_id    = var.routing_profile_option3
+  security_profile_ids  = ["fc3b7c27-a40a-4845-8fde-e1ada8ea05ed"]
+
+  phone_config {
+    phone_type          = "SOFT_PHONE"
+  }
+
+  identity_info {
+    first_name          = "Agent3"
+    last_name           = "User"
+  }
+}
+
+resource "aws_connect_user" "agent4" {
+  instance_id           = data.aws_connect_instance.existing.id
+  name                  = "Agent4"
+  password              = "SpaceCode3122!"
+  routing_profile_id    = var.routing_profile_option4
+  security_profile_ids  = ["fc3b7c27-a40a-4845-8fde-e1ada8ea05ed"]
+
+  phone_config {
+    phone_type          = "SOFT_PHONE"
+  }
+
+  identity_info {
+    first_name          = "Agent4"
+    last_name           = "User"
+  }
+}
+
+resource "aws_connect_user" "agent5" {
+  instance_id           = data.aws_connect_instance.existing.id
+  name                  = "Agent5"
+  password              = "SpaceCode3122!"
+  routing_profile_id    = var.routing_profile_option5
+  security_profile_ids  = ["fc3b7c27-a40a-4845-8fde-e1ada8ea05ed"]
+
+  phone_config {
+    phone_type          = "SOFT_PHONE"
+  }
+
+  identity_info {
+    first_name          = "Agent5"
+    last_name           = "User"
+  }
+}
+  
