@@ -1,106 +1,53 @@
-#Terraform
 terraform {
-    required_version = ">= 1.0"
-    required_providers {
-        aws = {
-            source = "hashicorp/aws"
-            version = ">= 5.0"
-        }
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 5.0"
     }
+  }
+  required_version = ">= 1.11.0"
 }
 
-#Provider AWS and region
+# Configure the AWS Provider
 provider "aws" {
-    region = "us-east-1"
+  region = "us-east-1"
 }
 
-#Resource AWS instance
-resource "aws_connect_instance" "amazon_connect" {
-    instance_alias = "fred-amazon-connect"
-    identity_management_type = "SAML"
-    inbound_calls_enabled = true
-    outbound_calls_enabled = false 
-    auto_resolve_best_voices_enabled = true
+###########################
+# 1) Amazon Connect Instance
+###########################
+# Reference the existing Amazon Connect instance
 
-    tags = {
-        Environment = "test"
-    }
+data "aws_connect_instance" "existing" {
+  instance_id = "1ccaafe5-b69b-474e-b523-c22de9d7f0a4"
 }
 
-#Data security profile agent
-data "aws_connect_security_profile" "agent" {
-    instance_id = aws_connect_instance.amazon_connect.id
-    name = "Agent"
+
+# Claim a DID phone number in Australia for this Connect instance
+resource "aws_connect_phone_number" "main" {
+  target_arn    = data.aws_connect_instance.existing.arn
+  type          = "DID"           # DID = Direct Inward Dialing (local number)
+  country_code  = "AU"            # AU = Australia
+  # target_phone_number = "+61872010033" # Uncomment and set if you want a specific number
 }
 
-#Data security profile manager
-data "aws_connect_security_profile" "manager" {
-    instance_id = aws_connect_instance.amazon_connect.id
-    name = "CallCenterManager"
+# Reference existing hours of operation
+data "aws_connect_hours_of_operation" "basic" {
+  instance_id = data.aws_connect_instance.existing.id
+  name        = "Basic Hours"
 }
 
-#Data security profile admin
-data "aws_connect_security_profile" "admin" {
-    instance_id = aws_connect_instance.amazon_connect.id
-    name = "Admin"
+# Create the sales queue
+resource "aws_connect_queue" "sales" {
+  instance_id           = data.aws_connect_instance.existing.id
+  name                  = "sales queue"
+  hours_of_operation_id = "d70aeaa0-2fcb-4bc2-bbc9-a7a6b1cabe0f" # Just the ID part, not the full ARN
+  description           = "Sales call queue"
 }
 
-#Data routing profile "default" 
-data "aws_connect_routing_profile" "default" {
-    instance_id = aws_connect_instance.amazon_connect.id
-    name = "Basic Routing Profile"
-}
-
-#Resource User agent
-resource "aws_connect_user" "agent" {
-    instance_id = aws_connect_instance.amazon_connect.id
-    name = "agentuser"
-    password = "SpaceCode3122!"
-    routing_profile_id = data.aws_connect_routing_profile.default.id
-    security_profile_ids = [data.aws_connect_security_profile.agent.id]
-    identity_info {
-        first_name = "Agent"
-        last_name = "User"
-    }
-    phone_config {
-        phone_type = "SOFT_PHONE"
-        auto_accept = false
-        after_contact_work_time_limit = 60
-    }
-}
-
-#Resource User manager
-resource "aws_connect_user" "manager" {
-    instance_id = aws_connect_instance.amazon_connect.id
-    name = "manageruser"
-    password = "SpaceCode3122!"
-    routing_profile_id = data.aws_connect_routing_profile.default.id
-    security_profile_ids = [data.aws_connect_security_profile.manager.id]
-    identity_info {
-        first_name = "Manager"
-        last_name = "User"
-    }
-    phone_config {
-        phone_type = "SOFT_PHONE"
-        auto_accept = false
-        after_contact_work_time_limit = 60
-    }
-}
-
-#Resource User admin
-resource "aws_connect_user" "admin" {
-    instance_id = aws_connect_instance.amazon_connect.id
-    name = "adminuser"
-    password = "SpaceCode3122!"
-    routing_profile_id = data.aws_connect_routing_profile.default.id
-    security_profile_ids = [data.aws_connect_security_profile.admin.id]
-    identity_info {
-        first_name = "Admin"
-        last_name = "User"
-    }
-    phone_config {
-        phone_type = "SOFT_PHONE"
-        auto_accept = false
-        after_contact_work_time_limit = 60
-    }
+resource "aws_connect_queue" "support" {
+  instance_id           = data.aws_connect_instance.existing.id
+  name                  = "support queue"
+  hours_of_operation_id = data.aws_connect_hours_of_operation.basic.id
+  description           = "Support call queue"
 }
